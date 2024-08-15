@@ -15,7 +15,8 @@ app = Flask(__name__, static_folder='static')
 processing_status = {
     'progress': 0,
     'searchSteps': 0,
-    'images': []
+    'images': [],
+    "active_timestamp": 0
 }
 
 
@@ -55,6 +56,7 @@ def start_solution():
         processing_status['progress'] = 0
         processing_status['searchSteps'] = 0
         processing_status['images'] = []
+        processing_status['active_timestamp'] = time.time()
 
         thread = threading.Thread(target=process_solution, args=(image_cv,))
         thread.start()
@@ -77,6 +79,7 @@ def process_solution(image_cv):
 
 @app.route('/solution_progress', methods=['GET'])
 def get_solution_progress():
+    processing_status['active_timestamp'] = time.time()
     return jsonify(progress=processing_status['progress'], searchSteps=processing_status['searchSteps'])
 
 @app.route('/solution_result', methods=['GET'])

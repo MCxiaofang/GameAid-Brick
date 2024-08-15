@@ -6,6 +6,7 @@ import numpy as np
 import copy
 import heapq
 from collections import defaultdict
+import time
 
 
 colors_rgb = [
@@ -287,6 +288,10 @@ def Astar(image, status):
     me = []
     heapq.heapify(q)
     while len(q) > 0:
+        # 如果超过30s没有active，结束
+        if time.time() - status["active_timestamp"] > 30:
+            status["progress"] = 69
+            return []
         node = heapq.heappop(q)
         status["progress"] = min(node[3], 69)
         status["searchSteps"] = status["searchSteps"] + 1
