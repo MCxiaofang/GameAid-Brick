@@ -343,7 +343,9 @@ def hints(image):
 
 def solution(image, status):
     image = cut(image, 500, -530, 33, -33, show=False)
+    print("Start solution")
     op_seq = Astar(image, status)
+    print("End solution")
     # draw result
     height, width = image.shape[:2]
     w = int(width / 10)
