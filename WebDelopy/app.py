@@ -53,6 +53,7 @@ def start_solution():
         image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         
         # 重置处理状态
+        processing_status = {}
         processing_status['progress'] = 0
         processing_status['searchSteps'] = 0
         processing_status['images'] = []

@@ -289,7 +289,7 @@ def Astar(image, status):
     heapq.heapify(q)
     while len(q) > 0:
         # 如果超过30s没有active，结束
-        if time.time() - status["active_timestamp"] > 30:
+        if time.time() - status["active_timestamp"] > 20:
             status["progress"] = 69
             return []
         node = heapq.heappop(q)
