@@ -53,7 +53,7 @@ def start_solution():
         image = Image.open(file.stream)
         image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         
-        # 如何thread当前正在运行，则关闭上一个线程
+        # 如果thread当前正在运行，则关闭上一个线程
         if processing_status["thread"] is not None:
             processing_status["stop_flag"] = True
             processing_status["thread"].join()
@@ -83,7 +83,6 @@ def process_solution(image_cv):
     processing_status['progress'] = 70
     processing_status['thread'] = None
 
-
 @app.route('/solution_progress', methods=['GET'])
 def get_solution_progress():
     processing_status['active_timestamp'] = time.time()
@@ -91,7 +90,15 @@ def get_solution_progress():
 
 @app.route('/solution_result', methods=['GET'])
 def get_solution_result():
-    return jsonify(images=processing_status['images'])
+    index = request.args.get('index', default=None, type=int)
+    if index is not None and 0 <= index < len(processing_status['images']):
+        return jsonify(image=processing_status['images'][index])
+    else:
+        return jsonify(error="Invalid index"), 400
+
+@app.route('/solution_cnt', methods=['GET'])
+def get_solution_count():
+    return jsonify(count=len(processing_status['images']))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=9001)

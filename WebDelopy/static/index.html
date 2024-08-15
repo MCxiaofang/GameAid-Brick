@@ -202,40 +202,47 @@
             // 轮询获取进度
             let progress = 0;
             while (progress < 100) {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // 每0.1秒获取一次进度
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 每秒获取一次进度
                 const progressResponse = await fetch('http://101.201.74.240:9001/solution_progress');
                 const progressData = await progressResponse.json();
                 progress = progressData.progress;
                 searchSteps = progressData.searchSteps;
-                progressBar.style.width = `${progress * 100 /70 }%`;
+                progressBar.style.width = `${progress * 100 / 70}%`;
                 progressBar.textContent = `${searchSteps}次搜索,当前步数${progress}`;
 
                 if (progress == 70) break;
             }
 
-            // 获取结果图片
-            const resultResponse = await fetch('http://101.201.74.240:9001/solution_result');
-            const resultData = await resultResponse.json();
+            // 获取结果图片数量
+            const countResponse = await fetch('http://101.201.74.240:9001/solution_cnt');
+            const countData = await countResponse.json();
+            const imageCount = countData.count;
 
             // 隐藏提示信息，显示结果
             hintDiv.style.display = 'none';
             resultDiv.style.display = 'block';
 
-            resultData.images.forEach((image, index) => {
+            // 逐张获取并展示图片
+            for (let i = 0; i < imageCount; i++) {
+                const resultResponse = await fetch(`http://101.201.74.240:9001/solution_result?index=${i}`);
+                const resultData = await resultResponse.json();
+                const image = resultData.image;
+
                 const img = document.createElement('img');
                 img.src = `data:image/png;base64,${image}`;
                 img.classList.add('d-block', 'w-100');
                 const carouselItem = document.createElement('div');
                 carouselItem.classList.add('carousel-item');
-                if (index === 0) {
+                if (i === 0) {
                     carouselItem.classList.add('active');
                 }
                 carouselItem.appendChild(img);
                 imgDiv.appendChild(carouselItem);
-            });
 
-            document.querySelector('.carousel').scrollIntoView({ behavior: 'smooth' });
+                document.querySelector('.carousel').scrollIntoView({ behavior: 'smooth' });
+            }
         }
+
     </script>
 </body>
 </html>
