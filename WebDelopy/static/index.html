@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>砖了个砖辅助工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .custom-file-input {
+            display: none;
+        }
+        .custom-file-label {
+            cursor: pointer;
+        }
+        #fun1_hint, #fun1_res, #fun2_hint, #fun2_res {
+            display: none;
+            margin-top: 20px;
+        }
+        .btn-group {
+            margin-top: 10px;
+        }
+        .carousel-inner img {
+            display: block;
+            margin: auto;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        .centered-text {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="alert alert-primary" role="alert">
+            <h1>“砖了个砖”辅助工具</h1>
+            <p>工具提供两个功能</p>
+            <ul>
+                <li>当前局面可以消除砖块的操作</li>
+                <li>当前局面可以消除所有砖块的操作步骤</li>
+            </ul>
+            <p>操作步骤</p>
+            <ol>
+                <li>点击“选择图片”，选择游戏截图图片</li>
+                <li>点击“获取提示”或“获取解法”按钮</li>
+                <li>等待算法完成</li>
+            </ol>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input type="file" id="fileInput" name="file" class="custom-file-input" accept="image/*" required>
+                    <label class="btn btn-outline-primary custom-file-label" for="fileInput">选择图片</label>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="get_hints()">获取提示</button>
+                    <button type="button" class="btn btn-warning" onclick="get_solution()">获取解法</button>
+                </div>
+            </form>
+        </div>
+        <div id="fun1_hint" class="alert alert-info" role="alert">
+            <div>图片已经上传成功，请耐心等待2～5s</div>
+            <div>功能说明:</div>
+            <ul style="margin-bottom: 0">
+                <li>同色方框所圈图标即可进行消除</li>
+                <li>方框旁同方框色数字，提示移动的方向和步数</li>
+            </ul>
+        </div>
+        <div id="fun1_res" class="alert alert-success" role="alert">
+            <div id="fun1_img">
+                <!-- 处理后的图片将在这里显示 -->
+            </div>
+        </div>
+        <div id="fun2_hint" class="alert alert-info" role="alert">
+            <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" id="fun2_progress" style="width: 0%">0%</div>
+            </div>
+            <div>图片已经上传成功，请耐心等待5～60s</div>
+            <div>功能说明:</div>
+            <ul style="margin-bottom: 0">
+                <li>将会返回1～10张图片，每张图片10个步骤</li>
+                <li>方框内部中心数字为操作序号，请严格按照序号顺序执行</li>
+                <li>同色方框所圈图标即可进行消除</li>
+                <li>方框旁同方框色数字，提示移动的方向和步数</li>
+            </ul>
+            <div><strong style="color: red">特殊说明</strong>：<strong>如果等待超过5分钟，可能存在局面无解的情况，请使用道具打乱所有图标，重新上传</strong></div>
+        </div>
+        <div id="fun2_res" class="alert alert-success" role="alert">
+            <!-- 居中文字-->
+            <div class="centered-text"><strong>请左右滑动图片</strong></div>
+            <div id="carouselExample" class="carousel slide">
+                <div class="carousel-inner" id="fun2_img">
+                    <!-- 处理后的图片将在这里显示 -->
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const fileName = event.target.files[0] ? event.target.files[0].name : '未选择任何文件';
+            document.querySelector('.custom-file-label').textContent = fileName;
+        });
+
+        function get_hints() {
+            document.getElementById('fun2_hint').style.display = 'none';
+            document.getElementById('fun2_res').style.display = 'none';
+
+            const form = document.getElementById('uploadForm');
+            const formData = new FormData(form);
+            const hintDiv = document.getElementById('fun1_hint');
+            const resultDiv = document.getElementById('fun1_res');
+            const imgDiv = document.getElementById('fun1_img');
+
+            // 显示提示信息
+            hintDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            imgDiv.innerHTML = '';
+
+            fetch('http://127.0.0.1:9001/hints', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const img = document.createElement('img');
+                img.src = url;
+
+                // 隐藏提示信息，显示结果
+                hintDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                imgDiv.appendChild(img);
+                img.scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                hintDiv.style.display = 'none';
+                resultDiv.style.display = 'none';
+                alert('图片处理失败，请重试。');
+            });
+        }
+
+        async function get_solution() {
+            document.getElementById('fun1_hint').style.display = 'none';
+            document.getElementById('fun1_res').style.display = 'none';
+            const form = document.getElementById('uploadForm');
+            const formData = new FormData(form);
+            const hintDiv = document.getElementById('fun2_hint');
+            const resultDiv = document.getElementById('fun2_res');
+            const imgDiv = document.getElementById('fun2_img');
+            const progressBar = document.getElementById('fun2_progress');
+
+            // 显示提示信息
+            hintDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            imgDiv.innerHTML = '';
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+
+            // 上传图片并开始获取进度
+            const uploadResponse = await fetch('http://127.0.0.1:9001/solution', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!uploadResponse.ok) {
+                hintDiv.style.display = 'none';
+                alert('图片上传失败，请重试。');
+                return;
+            }
+
+            // 轮询获取进度
+            let progress = 0;
+            while (progress < 100) {
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 每0.1秒获取一次进度
+                const progressResponse = await fetch('http://127.0.0.1:9001/solution_progress');
+                const progressData = await progressResponse.json();
+                progress = progressData.progress;
+                searchSteps = progressData.searchSteps;
+                progressBar.style.width = `${progress * 100 /70 }%`;
+                progressBar.textContent = `${searchSteps}次搜索,当前步数${progress}`;
+
+                if (progress == 70) break;
+            }
+
+            // 获取结果图片
+            const resultResponse = await fetch('http://127.0.0.1:9001/solution_result');
+            const resultData = await resultResponse.json();
+
+            // 隐藏提示信息，显示结果
+            hintDiv.style.display = 'none';
+            resultDiv.style.display = 'block';
+
+            resultData.images.forEach((image, index) => {
+                const img = document.createElement('img');
+                img.src = `data:image/png;base64,${image}`;
+                img.classList.add('d-block', 'w-100');
+                const carouselItem = document.createElement('div');
+                carouselItem.classList.add('carousel-item');
+                if (index === 0) {
+                    carouselItem.classList.add('active');
+                }
+                carouselItem.appendChild(img);
+                imgDiv.appendChild(carouselItem);
+            });
+
+            document.querySelector('.carousel').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
