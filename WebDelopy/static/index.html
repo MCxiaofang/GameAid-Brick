@@ -122,11 +122,15 @@
     </div>
 
     <script>
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const fileName = event.target.files[0] ? event.target.files[0].name : '未选择任何文件';
-            document.querySelector('.custom-file-label').textContent = fileName;
-        });
+	document.getElementById('fileInput').addEventListener('change', function(event) {
+    		const fileName = event.target.files[0] ? event.target.files[0].name : '未选择任何文件';
+    		const maxLength = 30; // 设置最大长度为25个字符
 
+    		// 如果文件名超过最大长度，进行截断并添加省略号
+    		const displayFileName = fileName.length > maxLength ? fileName.substring(0, maxLength - 3) + '...' : fileName;
+
+    		document.querySelector('.custom-file-label').textContent = displayFileName;
+	});
         function get_hints() {
             document.getElementById('fun2_hint').style.display = 'none';
             document.getElementById('fun2_res').style.display = 'none';
@@ -142,7 +146,7 @@
             resultDiv.style.display = 'none';
             imgDiv.innerHTML = '';
 
-            fetch('http://127.0.0.1:9001/hints', {
+            fetch('http://101.201.74.240:9001/hints', {
                 method: 'POST',
                 body: formData
             })
@@ -184,7 +188,7 @@
             progressBar.textContent = '0%';
 
             // 上传图片并开始获取进度
-            const uploadResponse = await fetch('http://127.0.0.1:9001/solution', {
+            const uploadResponse = await fetch('http://101.201.74.240:9001/solution', {
                 method: 'POST',
                 body: formData
             });
@@ -199,7 +203,7 @@
             let progress = 0;
             while (progress < 100) {
                 await new Promise(resolve => setTimeout(resolve, 1000)); // 每0.1秒获取一次进度
-                const progressResponse = await fetch('http://127.0.0.1:9001/solution_progress');
+                const progressResponse = await fetch('http://101.201.74.240:9001/solution_progress');
                 const progressData = await progressResponse.json();
                 progress = progressData.progress;
                 searchSteps = progressData.searchSteps;
@@ -210,7 +214,7 @@
             }
 
             // 获取结果图片
-            const resultResponse = await fetch('http://127.0.0.1:9001/solution_result');
+            const resultResponse = await fetch('http://101.201.74.240:9001/solution_result');
             const resultData = await resultResponse.json();
 
             // 隐藏提示信息，显示结果
