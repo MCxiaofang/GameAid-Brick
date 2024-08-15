@@ -288,7 +288,7 @@ def Astar(image, status):
     heapq.heapify(q)
     while len(q) > 0:
         node = heapq.heappop(q)
-        status["progress"] = max(node[3], 69)
+        status["progress"] = min(node[3], 69)
         status["searchSteps"] = status["searchSteps"] + 1
         # print(f"Step: {node[3]}\tScore: {-node[0]:.2f}\tCheck: {check(node[1])}\t")
         for h in node[2]:           # [x,y], move_dir, move_step, [pair_x, pair_y], pair_dir
