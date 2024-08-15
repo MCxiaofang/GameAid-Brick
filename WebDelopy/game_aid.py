@@ -290,8 +290,11 @@ def Astar(image, status):
     while len(q) > 0:
         # 如果超过30s没有active，结束
         if time.time() - status["active_timestamp"] > 20:
-            status["progress"] = 69
             return []
+        if status["stop_flag"]:
+            status["stop_flag"] = False
+            return []
+        
         node = heapq.heappop(q)
         status["progress"] = min(node[3], 69)
         status["searchSteps"] = status["searchSteps"] + 1

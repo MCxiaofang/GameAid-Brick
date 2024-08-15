@@ -16,9 +16,10 @@ processing_status = {
     'progress': 0,
     'searchSteps': 0,
     'images': [],
-    "active_timestamp": 0
+    "active_timestamp": 0,
+    "thread": None,
+    "stop_flag": False
 }
-
 
 @app.route('/')
 def index():
@@ -52,15 +53,19 @@ def start_solution():
         image = Image.open(file.stream)
         image_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         
-        # 重置处理状态
-        processing_status = {}
+        # 如何thread当前正在运行，则关闭上一个线程
+        if processing_status["thread"] is not None:
+            processing_status["stop_flag"] = True
+            processing_status["thread"].join()
+            print("Last thread stopped")
+
         processing_status['progress'] = 0
         processing_status['searchSteps'] = 0
         processing_status['images'] = []
         processing_status['active_timestamp'] = time.time()
 
-        thread = threading.Thread(target=process_solution, args=(image_cv,))
-        thread.start()
+        processing_status["thread"] = threading.Thread(target=process_solution, args=(image_cv,))
+        processing_status["thread"].start()
         return "Processing started", 202
 
 def process_solution(image_cv):
@@ -76,6 +81,7 @@ def process_solution(image_cv):
 
     processing_status['images'] = result_images_base64
     processing_status['progress'] = 70
+    processing_status['thread'] = None
 
 
 @app.route('/solution_progress', methods=['GET'])
