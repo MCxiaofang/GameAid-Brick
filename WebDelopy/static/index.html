@@ -47,6 +47,31 @@
             align-items: center;
             text-align: center;
         }
+        /* 全屏预览样式 */
+        .fullscreen-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .fullscreen-preview img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .fullscreen-preview .close-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 30px;
+            color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -121,17 +146,23 @@
             </div>
         </div>
     </div>
+    <!-- 全屏预览容器 -->
+    <div class="fullscreen-preview" id="fullscreenPreview">
+        <span class="close-button" onclick="closeFullscreenPreview()">&times;</span>
+        <img id="fullscreenImage" src="" alt="Full Screen Image">
+    </div>
 
     <script>
-	document.getElementById('fileInput').addEventListener('change', function(event) {
-    		const fileName = event.target.files[0] ? event.target.files[0].name : '未选择任何文件';
-    		const maxLength = 30; // 设置最大长度为25个字符
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const fileName = event.target.files[0] ? event.target.files[0].name : '未选择任何文件';
+            const maxLength = 30; // 设置最大长度为25个字符
 
-    		// 如果文件名超过最大长度，进行截断并添加省略号
-    		const displayFileName = fileName.length > maxLength ? fileName.substring(0, maxLength - 3) + '...' : fileName;
+            // 如果文件名超过最大长度，进行截断并添加省略号
+            const displayFileName = fileName.length > maxLength ? fileName.substring(0, maxLength - 3) + '...' : fileName;
 
-    		document.querySelector('.custom-file-label').textContent = displayFileName;
-	});
+            document.querySelector('.custom-file-label').textContent = displayFileName;
+        });
+
         function get_hints() {
             document.getElementById('fun2_hint').style.display = 'none';
             document.getElementById('fun2_res').style.display = 'none';
@@ -147,7 +178,7 @@
             resultDiv.style.display = 'none';
             imgDiv.innerHTML = '';
 
-            fetch('http://101.201.74.240:9001/hints', {
+            fetch('http://127.0.0.1:9001/hints', {
                 method: 'POST',
                 body: formData
             })
@@ -156,6 +187,7 @@
                 const url = URL.createObjectURL(blob);
                 const img = document.createElement('img');
                 img.src = url;
+                img.onclick = function() { openFullscreenPreview(url); };
 
                 // 隐藏提示信息，显示结果
                 hintDiv.style.display = 'none';
@@ -189,7 +221,7 @@
             progressBar.textContent = '0%';
 
             // 上传图片并开始获取进度
-            const uploadResponse = await fetch('http://101.201.74.240:9001/solution', {
+            const uploadResponse = await fetch('http://127.0.0.1:9001/solution', {
                 method: 'POST',
                 body: formData
             });
@@ -204,7 +236,7 @@
             let progress = 0;
             while (progress < 100) {
                 await new Promise(resolve => setTimeout(resolve, 1000)); // 每秒获取一次进度
-                const progressResponse = await fetch('http://101.201.74.240:9001/solution_progress');
+                const progressResponse = await fetch('http://127.0.0.1:9001/solution_progress');
                 const progressData = await progressResponse.json();
                 progress = progressData.progress;
                 searchSteps = progressData.searchSteps;
@@ -215,7 +247,7 @@
             }
 
             // 获取结果图片数量
-            const countResponse = await fetch('http://101.201.74.240:9001/solution_cnt');
+            const countResponse = await fetch('http://127.0.0.1:9001/solution_cnt');
             const countData = await countResponse.json();
             const imageCount = countData.count;
 
@@ -225,13 +257,14 @@
 
             // 逐张获取并展示图片
             for (let i = 0; i < imageCount; i++) {
-                const resultResponse = await fetch(`http://101.201.74.240:9001/solution_result?index=${i}`);
+                const resultResponse = await fetch(`http://127.0.0.1:9001/solution_result?index=${i}`);
                 const resultData = await resultResponse.json();
                 const image = resultData.image;
 
                 const img = document.createElement('img');
                 img.src = `data:image/png;base64,${image}`;
                 img.classList.add('d-block', 'w-100');
+                img.onclick = function() { openFullscreenPreview(img.src); };
                 const carouselItem = document.createElement('div');
                 carouselItem.classList.add('carousel-item');
                 if (i === 0) {
@@ -244,6 +277,17 @@
             }
         }
 
+        function openFullscreenPreview(src) {
+            const preview = document.getElementById('fullscreenPreview');
+            const previewImage = document.getElementById('fullscreenImage');
+            previewImage.src = src;
+            preview.style.display = 'flex';
+        }
+
+        function closeFullscreenPreview() {
+            const preview = document.getElementById('fullscreenPreview');
+            preview.style.display = 'none';
+        }
     </script>
 </body>
 </html>
