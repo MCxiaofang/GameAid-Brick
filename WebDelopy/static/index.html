@@ -178,7 +178,7 @@
             resultDiv.style.display = 'none';
             imgDiv.innerHTML = '';
 
-            fetch('http://127.0.0.1:9001/hints', {
+            fetch('http://101.201.74.240:9001/hints', {
                 method: 'POST',
                 body: formData
             })
@@ -221,7 +221,7 @@
             progressBar.textContent = '0%';
 
             // 上传图片并开始获取进度
-            const uploadResponse = await fetch('http://127.0.0.1:9001/solution', {
+            const uploadResponse = await fetch('http://101.201.74.240:9001/solution', {
                 method: 'POST',
                 body: formData
             });
@@ -236,7 +236,7 @@
             let progress = 0;
             while (progress < 100) {
                 await new Promise(resolve => setTimeout(resolve, 1000)); // 每秒获取一次进度
-                const progressResponse = await fetch('http://127.0.0.1:9001/solution_progress');
+                const progressResponse = await fetch('http://101.201.74.240:9001/solution_progress');
                 const progressData = await progressResponse.json();
                 progress = progressData.progress;
                 searchSteps = progressData.searchSteps;
@@ -247,7 +247,7 @@
             }
 
             // 获取结果图片数量
-            const countResponse = await fetch('http://127.0.0.1:9001/solution_cnt');
+            const countResponse = await fetch('http://101.201.74.240:9001/solution_cnt');
             const countData = await countResponse.json();
             const imageCount = countData.count;
 
@@ -257,7 +257,7 @@
 
             // 逐张获取并展示图片
             for (let i = 0; i < imageCount; i++) {
-                const resultResponse = await fetch(`http://127.0.0.1:9001/solution_result?index=${i}`);
+                const resultResponse = await fetch(`http://101.201.74.240:9001/solution_result?index=${i}`);
                 const resultData = await resultResponse.json();
                 const image = resultData.image;
 
