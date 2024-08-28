@@ -211,7 +211,7 @@ def gen_hint_image(image, board):
                     step_hint[tuple(dir)] += 1
 
                     # 绘制文本
-                    cv2.putText(image, str(op[1]), (int(text_x), int(text_y)), cv2.FONT_HERSHEY_SIMPLEX, 2, colors_rgb[cdx], 4, cv2.LINE_AA)
+                    draw_text(image, str(op[1]), int(text_x), int(text_y), colors_rgb[cdx], 2)
                     
                     for p in op[2]:
                         cv2.rectangle(image, (p[1] * icon_width, p[0] * icon_height), ((p[1] + 1) * icon_width, (p[0] + 1) * icon_height),  colors_rgb[cdx], 10)
